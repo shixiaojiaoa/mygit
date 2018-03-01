@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>购票选座</title>
+    <script src="jquery-3.3.1.js"></script>
+    <style>
+        *{
+            margin:0;
+            padding: 0;
+        }
+        ul{
+            list-style-type: none;
+        }
+        body{
+            background-color: black;
+            font-size: 15px;
+        }
+        #container{
+            width: 500px;
+            margin: 0 auto;
+        }
+        li{
+            display: inline-block;
+        }
+        #header{
+            height: 40px;
+            background-color: #dddddd;
+            line-height: 40px;
+        }
+        .wrp{
+            padding: 15px;
+            color: white;
+        }
+        #color ul{
+            height: 20px;
+        }
+        #color li{
+            height: 20px;
+            margin-right: 50px;
+        }
+        #color span{
+            float: left;
+            width: 30px;
+            height: 20px;
+            margin-left: 10px;
+        }
+        #img{
+            text-align: center;
+            margin-top: 15px;
+        }
+        #content ul{
+            margin-bottom: 10px;
+        }
+        #content li{
+            width: 30px;
+            height: 20px;
+            margin-right: 5px;
+        }
+        #content .empty{
+            background-color: white;
+        }
+        #content .sold{
+            background-color: #0288d1;
+        }
+        #content .selected{
+            background-color: #d32f2f;
+        }
+        #content li:nth-child(6){
+            margin-left: 120px;
+        }
+        #select li{
+            border: 1px solid burlywood;
+            padding: 5px;
+            color: burlywood;
+            margin: 8px;
+        }
+        #bottom{
+            border-top: 1px solid rgba(255,255,255,0.7);
+        }
+        #bottom #right{
+            float: right;
+        }
+        #footer{
+            background-color:#757575;
+            height: 40px ;
+            line-height: 40px;
+            color: white;
+        }
+        #footer span{
+            margin-left: 20px;
+        }
+        #footer input{
+            height: 40px;
+            width: 100px;
+            background-color: burlywood;
+            float: right;
+            border: none;
+        }
+
+    </style>
+</head>
+<body>
+<div id="container">
+    <div id="header">&nbsp;今天2月21日&nbsp;17:09</div>
+    <div id="color" class="wrp">
+            <ul>
+                <li><span style="background-color: white"></span><span class="text">可选</span></li>
+                <li><span style="background-color: #d32f2f"></span><span class="text">已选</span></li>
+                <li><span style="background-color: #0288d1"></span><span class="text">已售</span></li>
+            </ul>
+    </div>
+    <div id="img">
+            <img src="../jquery/2-1/1.png" alt="">
+    </div>
+    <div id="content" class="wrp">
+
+    </div>
+    <div id="bottom" class="wrp">
+        <span>已选座位</span>
+        <span id="right">最多可选择5个座位</span>
+    </div>
+    <div id="select">
+
+     </div>
+    <div id="footer">
+        <span>&nbsp;合计：</span>
+        <span id="sum" style="color: #d32f2f">￥0</span>
+        <span id="num" style="font-size: 10px">￥10*0</span>
+        <input type="button" value="确认选座">
+    </div>
+</div>
+<script>
+    /////////////////////初始化座位/////////////////////
+    var thisArr = [];
+    function InitList() {// 注意字符串拼接
+        var thisHtml ="";
+        for(var i = 0;i<8;i++){
+            thisHtml+="<ul class='list'>";
+            for (var j= 0;j<10;j++){
+                if(Math.random()>0.5)
+                    thisHtml+='<li class = "empty" sign='+(i+1)+'排'+(j+1)+'座></li>';
+                else
+                    thisHtml+='<li class = "sold" sign='+(i+1)+'排'+(j+1)+'座></li>';
+            }
+            thisHtml+="</ul/>"
+        }
+        $("#content").html(thisHtml);
+    };
+    /////////////////绑定点击事件////////////////////////
+    $("#content").on("click","li",function () {
+        if($(this).attr("class")=="empty"&&thisArr.length<5){
+            $(this).attr("class","selected");
+            thisArr.push($(this).attr("sign"));
+        }
+        else if($(this).attr("class")=="selected") {
+            $(this).attr("class", "empty");
+            del($(this).attr("sign"));
+        }
+        change();
+    });
+    /////////////////////////删除数组中的元素/////////////////////
+    function del(a) {
+        for(var i = 0;i<thisArr.length;i++){
+            if(thisArr[i] == a){
+                thisArr.splice(i,1);
+            }
+        }
+    };
+    //////////////////更新已选座位情况 和总价//////////////////////////////
+    function change() {
+        var thisHtml = "<ul>";
+        for (var i =0;i<thisArr.length;i++){
+            thisHtml+="<li>"+thisArr[i]+"</li>";
+        }
+        thisHtml+="</ul>";
+        $("#select").html(thisHtml);
+        $("#num").html("￥10*"+thisArr.length);
+        $("#sum").html(thisArr.length*10);
+    }
+    InitList();
+
+</script>
+</body>
+</html>
