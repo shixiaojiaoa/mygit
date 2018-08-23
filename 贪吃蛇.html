@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>贪吃蛇面向过程版</title>
+	<style>
+		#container{
+			position: relative;
+			margin: 0 auto;
+			width: 1000px;
+			height: 550px;
+			border: 1px solid #000;
+		}
+		#ground{
+			width: 1000px;
+			height: 500px;
+			background: orange;
+			position: relative;
+		}
+		#control{
+			width: 1000px;
+			height: 50px;
+			line-height: 50px;
+		}
+		#brand , #score_box{
+			float: left;
+		}
+		#score_box{
+			margin-left: 50px;
+		}
+		#buttons{
+			float: right;
+		}
+		.block{
+			width: 20px;
+			height: 20px;
+			background: orange;
+			float: left;
+		}
+		.snake-block{
+			background: #f00;
+			position: absolute;
+			top: 60px;
+		}
+		.food-block{
+			background: #00f;
+			position: absolute;
+		}
+		#over{
+			display: none;
+			border-radius: 8px;
+			position: absolute;
+			width: 140px;
+			height: 60px;
+			line-height: 30px;
+			top:50%;
+			left: 50%;
+			margin-top: -100px;
+			margin-left: -100px;
+			background: white;
+			text-align: center;
+		}
+		#over #btn-again{
+			border-radius: 30px;
+			border: none;
+			background-color: red;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="container">
+		<div id="ground"></div>
+		<div id="control">
+			<div id="brand">贪吃蛇 By 石小娇</div>
+			<div id="score_box">得分：<span id="score" style="color: blue">0</span></div>
+			<div id="buttons">
+				<button id="btn-start">开始</button>
+				<button id="btn-pause">暂停</button>
+			</div>
+		</div>
+		<div id="over">
+			<div>Game over!</div>
+			<button id="btn-again">重新开始</button>
+		</div>
+	</div>
+	<script>
+		// 立即执行函数
+		(function () {
+			var direction = 'right';//蛇移动方向 初始向右
+			var oFood;
+			var timer = null;//吃到自己时终止定时器
+			var score = 0;
+			var snakeBody = [];//蛇身的每个div
+
+			//1. 初始化操场（由很多大小相同的div块组成）
+			var oGround = document.getElementById('ground');
+			for(var i=0; i<50*25; i++){
+				var oDiv = document.createElement('div');
+				oDiv.className = 'block';
+				oGround.appendChild(oDiv);
+			}
+
+			//2. 创建蛇
+			function createSnake() {
+				for(var i=0 ; i<3 ; i++){
+					var oDiv = document.createElement('div');
+					oDiv.className = 'block snake-block';
+					oDiv.style.left = (3 - i) * 20 + 'px';
+					oGround.appendChild(oDiv);
+					snakeBody.push(oDiv);
+				}
+			}
+			createSnake();
+
+			//3. 创建食物(满足条件：坐标范围 坐标是20的倍数 坐标不重复于蛇身 do-while)
+			function createFood(){
+				do{
+					var bFlag = true;//标识 true找到合适的食物坐标
+					var iLeft = parseInt(Math.random()*50)*20;//0-980 (0~49)*20
+					var iTop = parseInt(Math.random()*25)*20;//0-480
+					for(var i=0; i<snakeBody.length; i++){
+						if(snakeBody[i].offsetLeft == iLeft && snakeBody[i].offsetTop == iTop){
+							bFlag = false;
+						} 
+					}
+
+				}while(!bFlag);
+				oFood = document.createElement('div');
+				oFood.className = 'block food-block';
+				oFood.style.left = iLeft + 'px';
+				oFood.style.top = iTop + 'px';
+				oGround.appendChild(oFood);
+			}
+			createFood();
+
+			// 开始按钮
+			var oBtnStart = document.getElementById('btn-start');
+			oBtnStart.onclick = function () {
+				timer = setInterval(function(){
+					move();
+				},500);
+			};
+
+			// 暂停按钮
+			var oBtnStop = document.getElementById('btn-pause');
+			oBtnStop.onclick = function () {
+				clearInterval(timer);
+			};
+
+			// 重新开始
+			var oBtnAgain = document.getElementById('btn-again');
+			oBtnAgain.onclick = function () {
+				window.location.reload();
+			};
+
+			// 封装蛇移动的函数
+			function move(){
+				var snakeHead = snakeBody[0];
+
+				if(snakeHead.offsetLeft == -20 || snakeHead.offsetLeft == 1000 || snakeHead.offsetTop == -20 || snakeHead.offsetTop == 500){
+					document.getElementById('over').style.display = 'block';
+					clearInterval(timer);
+				}else{
+				
+					// nextPos 蛇头的下一个移动点
+					var nextPos;
+					if(direction == 'left'){
+						nextPos = {
+							left: snakeHead.offsetLeft - 20,
+							top: snakeHead.offsetTop
+						};
+					}else if(direction == 'up'){
+						nextPos = {
+							left: snakeHead.offsetLeft,
+							top: snakeHead.offsetTop - 20
+						};
+					}else if(direction == 'right'){
+						nextPos = {
+							left: snakeHead.offsetLeft + 20,
+							top: snakeHead.offsetTop
+						};
+					}if(direction == 'down'){
+						nextPos = {
+							left: snakeHead.offsetLeft,
+							top: snakeHead.offsetTop + 20
+						};
+					}
+					//4. 蛇吃食物和增长身体
+					// 下一个坐标是食物坐标
+					if(nextPos.left == oFood.offsetLeft && nextPos.top == oFood.offsetTop){
+						oFood.className = 'block snake-block';
+						oFood.style.left = snakeHead.offsetLeft + 'px';
+						oFood.style.top = snakeHead.offsetTop + 'px';
+						snakeHead.style.left = nextPos.left + 'px';
+						snakeHead.style.top = nextPos.top + 'px';
+						snakeBody.splice(1,0,oFood);
+						// snakeBody.unshift(oFood);
+						score++;
+						console.log(document.getElementById('score'));
+
+						document.getElementById('score').innerHTML = score;
+						console.log(document.getElementById('score'));
+
+						createFood();
+					}else{
+					
+						// 蛇头移到下一个移动点 其他移到前一个蛇身块
+						
+						// for(var i=snakeBody.length-1 ; i>0; i--){
+						for(var i=0; i<snakeBody.length; i++){
+							// 思想：每次移动之前 先存一下坐标点 然后移动
+							var nowPos = {
+								left: snakeBody[i].offsetLeft,
+								top: snakeBody[i].offsetTop
+							}
+							snakeBody[i].style.left = nextPos.left + 'px';
+							snakeBody[i].style.top = nextPos.top + 'px';
+							nextPos = nowPos;
+						}
+						// snakeHead.style.left = nextPos.left + 'px';
+						// snakeHead.style.top = nextPos.top + 'px';
+					}
+
+					//5. 判断是否吃到自己或墙(吃自己时 前四节吃不到)
+					for(var i=4; i<snakeBody.length; i++){ 
+						// 吃到自己
+						if(snakeBody[i].offsetLeft == snakeHead.offsetLeft && snakeBody[i].offsetTop == snakeHead.offsetTop){
+							document.getElementById('over').style.display = 'block';
+							clearInterval(timer);
+						}
+					}
+				}
+			
+			// 按上下左右键控制方向 给document（整个文档）注册onkeydown事件
+			document.onkeydown = function(e){
+				e = e || window.event;//标准浏览器、ie浏览器
+				var keyCode = e.which || e.keyCode;
+				if(keyCode == 37){//left
+					if(direction != 'right'){
+						direction = 'left';
+					}
+				}else if(keyCode == 38){//up
+					if(direction != 'down'){
+						direction = 'up';
+					}
+				}else if(keyCode == 39){//right
+					if(direction != 'left'){
+						direction = 'right';
+					}
+				}else if(keyCode == 40){//down
+					if(direction != 'up'){
+						direction = 'down';
+					}
+				}
+				move();
+			}
+			
+		}
+
+		})();
+
+
+	</script>
+	
+</body>
+</html>
